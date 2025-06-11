@@ -1,0 +1,107 @@
+{% extends "_base.html" %}
+
+{% block title %}Memorial de {{ persona.nombre }}{% endblock %}
+
+{% block content %}
+<div class="card shadow-lg person-view">
+    <div class="card-header bg-dark text-white text-center">
+        <h1>En Memoria de</h1>
+        <h2 class="display-4">{{ persona.nombre }}</h2>
+    </div>
+    <div class="card-body">
+        <!-- Tabla con los datos de la persona -->
+        <div class="table-responsive mb-4">
+            <table class="table table-bordered text-center">
+                <thead class="table-light">
+                    <tr>
+                        <th>Fecha de Nacimiento</th>
+                        <th>Fecha de Fallecimiento</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{{ persona.fecha_nacimiento.strftime('%d de %B de %Y') }}</td>
+                        <td>{{ persona.fecha_muerte.strftime('%d de %B de %Y') }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <hr>
+
+        <!-- Lógica condicional para mostrar contenido -->
+
+        <!-- ESTADO 1: No se han subido imágenes -->
+        {% if not persona.images_uploaded %}
+        <div class="text-center">
+            <h3>Subir Recuerdos</h3>
+            <p class="text-muted">Sube entre 3 y 10 imágenes para crear un video memorial. Esta acción solo se puede realizar una vez.</p>
+            <form action="{{ url_for('upload_images', person_id=persona.id) }}" method="POST" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <input type="file" class="form-control" name="images" multiple required accept="image/*">
+                </div>
+                <button type="submit" class="btn btn-primary">Subir Imágenes</button>
+            </form>
+        </div>
+        
+        <!-- ESTADO 2: Imágenes subidas, pero sin video -->
+        {% elif not persona.video_generated %}
+            <!-- Subestado 2a: Video en proceso de generación -->
+            {% if persona.video_processing %}
+            <div class="text-center">
+                <h3>Generando Video Memorial</h3>
+                <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+                <p class="mt-3">El video se está generando. Esta operación puede tardar unos minutos.</p>
+                <p>Puedes actualizar esta página más tarde para ver el resultado.</p>
+                <div class="progress mt-4">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                         role="progressbar" 
+                         style="width: 100%">
+                        Procesando...
+                    </div>
+                </div>
+                <!-- Auto-recarga cada 15 segundos -->
+                <meta http-equiv="refresh" content="15">
+            </div>
+            
+            <!-- Subestado 2b: Listo para generar video -->
+            {% else %}
+            <div class="text-center">
+                <h3>Galería de Recuerdos</h3>
+                <div class="gallery mb-4">
+                    {% for image_name in image_files %}
+                        <img src="{{ url_for('static', filename='uploads/' + persona.id|string + '/' + image_name) }}" 
+                             alt="Recuerdo de {{ persona.nombre }}"
+                             class="img-thumbnail">
+                    {% endfor %}
+                </div>
+                <form action="{{ url_for('generate_video', person_id=persona.id) }}" method="POST">
+                    <button type="submit" class="btn btn-success btn-lg">✨ Generar Video Memorial ✨</button>
+                </form>
+            </div>
+            {% endif %}
+        
+        <!-- ESTADO 3: Video ya generado -->
+        {% else %}
+        <div class="text-center">
+            <h3>Video Memorial</h3>
+            <div class="video-container mb-3">
+                <video controls controlsList="nodownload" preload="auto" class="w-100 rounded">
+                    <source src="{{ url_for('static', filename=persona.video_path) }}" type="video/mp4">
+                    Tu navegador no soporta la etiqueta de video.
+                </video>
+            </div>
+            <button id="share-button" class="btn btn-info btn-lg" data-video-url="{{ url_for('static', filename=persona.video_path) }}">
+                🔗 Compartir a WhatsApp / Descargar
+            </button>
+            <div id="loading-bar" class="progress mt-3" style="display: none;">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 100%;">Exportando video...</div>
+            </div>
+        </div>
+        {% endif %}
+        
+    </div>
+</div>
+{% endblock %}

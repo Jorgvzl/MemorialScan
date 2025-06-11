@@ -1,0 +1,28 @@
+{% extends "_base.html" %}
+
+{% block title %}Iniciar Sesión{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center min-vh-100 align-items-center"> {# Added min-vh-100 and align-items-center #}
+    <div class="col-md-6 col-lg-4">
+        <div class="card shadow-lg"> {# Changed shadow-sm to shadow-lg for a more prominent card #}
+            <div class="card-body p-5"> {# Added p-5 for more padding inside the card body #}
+                <h2 class="card-title text-center mb-4">Acceso de Administrador</h2>
+                <form method="POST" action="{{ url_for('login') }}">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Usuario</label>
+                        <input type="text" class="form-control" id="username" name="username" required autocomplete="off"> {# Added autocomplete="off" #}
+                    </div>
+                    <div class="mb-4"> {# Increased margin-bottom for password field #}
+                        <label for="password" class="form-label">Contraseña</label>
+                        <input type="password" class="form-control" id="password" name="password" required autocomplete="new-password"> {# Added autocomplete="new-password" #}
+                    </div>
+                    <div class="d-grid gap-2"> {# Added gap-2 for spacing if multiple buttons were here #}
+                        <button type="submit" class="btn btn-primary btn-lg">Iniciar Sesión</button> {# Added btn-lg for a larger button #}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

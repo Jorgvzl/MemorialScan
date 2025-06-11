@@ -1,0 +1,63 @@
+/* Estilos Generales */
+body {
+    background-color: #f0f2f5; /* Un gris claro suave */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.card {
+    border: none;
+    border-radius: 0.75rem;
+}
+
+.card-header {
+    border-top-left-radius: 0.75rem;
+    border-top-right-radius: 0.75rem;
+}
+
+/* Estilos para la página de vista de persona */
+.person-view .card-header h1 {
+    font-weight: 300;
+}
+
+.person-view .card-header h2 {
+    font-weight: 700;
+}
+
+/* Galería de imágenes */
+.gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 10px;
+    padding: 10px;
+    background-color: #e9ecef;
+    border-radius: 0.5rem;
+}
+
+.gallery img {
+    width: 100%;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 0.3rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease-in-out;
+}
+
+.gallery img:hover {
+    transform: scale(1.05);
+    z-index: 10;
+}
+
+/* Contenedor de video */
+.video-container {
+    max-width: 720px;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: #000;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+#share-button {
+    font-weight: bold;
+}

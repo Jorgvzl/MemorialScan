@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: memorial-app # Puedes cambiar este nombre
+    runtime: python
+    buildCommand: |
+      pip install -r requirements.txt
+      # Instalar FFmpeg
+      apt-get update && apt-get install -y ffmpeg
+    startCommand: gunicorn app:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.4 # O la versión de Python que uses
+      - key: DATABASE_URL
+        fromDatabase:
+          name: memorial-db # El nombre de tu base de datos en Render
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true # Render generará una clave secreta segura

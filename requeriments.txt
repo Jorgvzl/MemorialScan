@@ -1,5 +1,6 @@
 Flask
 Flask-SQLAlchemy
+psycopg2-binary
 qrcode[pil]
 moviepy
 Pillow

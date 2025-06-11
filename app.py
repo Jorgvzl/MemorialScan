@@ -127,7 +127,7 @@ def video_worker():
                 if not image_paths:
                     raise ValueError("No se encontraron imágenes para procesar.")
 
-                duracion_por_imagen = 4 # segundos por imagen
+                duracion_por_imagen = 10 # segundos por imagen
                 fps = 24 # frames por segundo
 
                 # --- Redimensionar imágenes a un tamaño uniforme ---

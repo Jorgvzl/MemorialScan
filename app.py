@@ -315,11 +315,14 @@ def view_person(person_id):
         person_upload_folder = os.path.join(app.config['UPLOAD_FOLDER'], str(persona.id))
         if os.path.exists(person_upload_folder):
             try:
-                image_files = sorted(os.listdir(person_upload_folder))
+                # Filtrar directorios (como la carpeta temporal resized_temp)
+                all_files = os.listdir(person_upload_folder)
+                image_files = sorted([f for f in all_files if os.path.isfile(os.path.join(person_upload_folder, f))])
             except OSError:
                 image_files = []
 
     return render_template('view_person.html', persona=persona, image_files=image_files)
+
 
 @app.route('/upload_images/<int:person_id>', methods=['POST'])
 def upload_images(person_id):
@@ -445,10 +448,82 @@ def export_pdf():
     return send_file(buffer, as_attachment=True, download_name='registros_personas.pdf', mimetype='application/pdf')
 
 
+# --- NUEVAS RUTAS PARA ACTUALIZAR QR Y ELIMINAR ---
+
+@app.route('/update_qr/<int:person_id>', methods=['POST'])
+def update_qr(person_id):
+    """Regenera el código QR para una persona existente."""
+    if 'logged_in' not in session:
+        return redirect(url_for('login'))
+    
+    persona = db.session.get(Persona, person_id)
+    if not persona:
+        flash('Persona no encontrada.', 'danger')
+        return redirect(url_for('admin'))
+    
+    try:
+        # La función generate_qr_code sobrescribirá el archivo QR existente
+        qr_path_rel = generate_qr_code(persona.id)
+        persona.qr_code_path = qr_path_rel
+        db.session.commit()
+        flash(f'Código QR para "{persona.nombre}" actualizado exitosamente.', 'success')
+    except Exception as e:
+        flash(f'Error al actualizar el código QR: {e}', 'danger')
+    
+    return redirect(url_for('admin'))
+
+@app.route('/delete_person/<int:person_id>', methods=['POST'])
+def delete_person(person_id):
+    """Elimina un registro de persona y todos sus archivos asociados."""
+    if 'logged_in' not in session:
+        return redirect(url_for('login'))
+
+    persona = db.session.get(Persona, person_id)
+    if not persona:
+        flash('Persona no encontrada.', 'danger')
+        return redirect(url_for('admin'))
+
+    nombre_persona = persona.nombre
+    try:
+        # 1. Eliminar archivo de Código QR
+        if persona.qr_code_path:
+            qr_full_path = os.path.join(app.root_path, 'static', persona.qr_code_path)
+            if os.path.exists(qr_full_path):
+                os.remove(qr_full_path)
+                app.logger.info(f"Archivo QR eliminado: {qr_full_path}")
+
+        # 2. Eliminar archivo de Video
+        if persona.video_path:
+            video_full_path = os.path.join(app.root_path, 'static', persona.video_path)
+            if os.path.exists(video_full_path):
+                os.remove(video_full_path)
+                app.logger.info(f"Archivo de video eliminado: {video_full_path}")
+
+        # 3. Eliminar carpeta de Imágenes Subidas
+        upload_folder_path = os.path.join(app.config['UPLOAD_FOLDER'], str(person_id))
+        if os.path.exists(upload_folder_path):
+            shutil.rmtree(upload_folder_path)
+            app.logger.info(f"Carpeta de imágenes eliminada: {upload_folder_path}")
+
+        # 4. Eliminar el registro de la Base de Datos
+        db.session.delete(persona)
+        db.session.commit()
+
+        flash(f'El registro de "{nombre_persona}" y todos sus archivos asociados han sido eliminados.', 'success')
+
+    except Exception as e:
+        db.session.rollback() # Revertir cambios en la BD si falla la eliminación de archivos
+        flash(f'Error al eliminar el registro: {e}', 'danger')
+        app.logger.error(f"Error al eliminar persona con ID {person_id}: {e}", exc_info=True)
+    
+    return redirect(url_for('admin'))
+
+
 # --- FUNCIONES AUXILIARES ---
 def generate_qr_code(person_id):
     """Genera un QR que apunta a la página de visualización y devuelve la ruta relativa."""
-    view_url = url_for('view_person', person_id=person_id, _external=True)
+    # Usamos la URL fija para el entorno de producción
+    view_url = f"https://memorialscan.onrender.com/view/{person_id}"
     qr_filename = f'qr_{person_id}.png'
     qr_path_abs = os.path.join(app.config['QR_CODE_FOLDER'], qr_filename)
     

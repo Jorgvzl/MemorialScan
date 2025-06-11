@@ -1,0 +1,7 @@
+Flask
+Flask-SQLAlchemy
+qrcode[pil]
+moviepy
+Pillow
+reportlab
+gunicorn

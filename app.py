@@ -57,7 +57,8 @@ if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
     # Render usa 'postgres://' pero SQLAlchemy prefiere 'postgresql://'
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL or 'sqlite:///' + os.path.join(instance_path, 'database.db')app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL or 'sqlite:///' + os.path.join(instance_path, 'database.db')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Configuración de carpetas para subidas de archivos
 app.config['UPLOAD_FOLDER'] = os.path.join(basedir, 'static', 'uploads')
